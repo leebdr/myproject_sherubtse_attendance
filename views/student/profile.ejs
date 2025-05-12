@@ -1,0 +1,375 @@
+<%- include('../partials/student-header') %>
+
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Student Profile</h1>
+    <span class="badge bg-primary">Student</span>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Welcome, <%= user ? user.name : 'Student' %>!</h5>
+      <p class="card-text">Manage your personal information, academic details, and account settings below.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Profile Summary Card -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Profile Summary</h5>
+        </div>
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <img src="/placeholder.svg?height=128&width=128" alt="Profile Picture" class="rounded-circle img-thumbnail" style="width: 128px; height: 128px; object-fit: cover;">
+          </div>
+          <h5><%= user ? user.name : 'Student Name' %></h5>
+          <p class="text-muted"><%= user ? user.email : 'student@sherubtse.edu.bt' %></p>
+          <span class="badge bg-light text-dark border">Student ID: <%= user ? user.studentId : '12345' %></span>
+          
+          <hr>
+          
+          <div class="text-start">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Department:</span>
+              <span><%= user && user.department ? user.department : 'DOPS' %></span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Course:</span>
+              <span><%= user && user.course ? user.course : 'BSc in Physics' %></span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Year:</span>
+              <span><%= user && user.year ? user.year : '2' %></span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">CGPA:</span>
+              <span><%= user && user.cgpa ? user.cgpa : '3.7' %></span>
+            </div>
+          </div>
+          
+          <form id="photo-form" enctype="multipart/form-data" class="mt-3">
+            <label for="profile-photo" class="btn btn-outline-primary w-100">Change Photo</label>
+            <input type="file" id="profile-photo" name="profilePhoto" accept="image/*" class="d-none">
+            <div id="upload-status" class="small text-muted mt-1"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Details -->
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Profile Details</h5>
+        </div>
+        <div class="card-body">
+          <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">Personal</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="academic-tab" data-bs-toggle="tab" data-bs-target="#academic" type="button" role="tab" aria-controls="academic" aria-selected="false">Academic</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="account-tab" data-bs-toggle="tab" data-bs-target="#account" type="button" role="tab" aria-controls="account" aria-selected="false">Account</button>
+            </li>
+          </ul>
+          
+          <div class="tab-content pt-4" id="profileTabsContent">
+            <!-- Personal Information Tab -->
+            <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+              <form id="personalForm">
+                <div class="row mb-3">
+                  <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="name" value="<%= user ? user.name : 'Student Name' %>">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" value="<%= user ? user.email : 'student@sherubtse.edu.bt' %>" disabled>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="studentId" class="form-label">Student ID</label>
+                    <input type="text" class="form-control" id="studentId" value="<%= user ? user.studentId : '12345' %>" disabled>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select class="form-select" id="gender">
+                      <option value="male" <%= user && user.gender === 'Male' ? 'selected' : '' %>>Male</option>
+                      <option value="female" <%= user && user.gender === 'Female' ? 'selected' : '' %>>Female</option>
+                      <option value="other" <%= user && user.gender === 'Other' ? 'selected' : '' %>>Other</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" id="dateOfBirth" value="<%= user && user.dateOfBirth ? user.dateOfBirth : '1999-05-15' %>">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone" value="<%= user && user.phone ? user.phone : '975-17123456' %>">
+                  </div>
+                  <div class="col-12 mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <input type="text" class="form-control" id="address" value="<%= user && user.address ? user.address : 'Thubtenling Hostel, Room 203' %>">
+                  </div>
+                  <div class="col-12 mb-3">
+                    <label for="bio" class="form-label">Bio</label>
+                    <textarea class="form-control" id="bio" rows="3"><%= user && user.bio ? user.bio : "I'm a second-year Physics student interested in theoretical physics and astronomy." %></textarea>
+                  </div>
+                </div>
+
+                <hr>
+
+                <div class="mb-4">
+                  <h5>Emergency Contact</h5>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="emergencyName" class="form-label">Contact Name</label>
+                      <input type="text" class="form-control" id="emergencyName" value="<%= user && user.emergencyContact ? user.emergencyContact.name : 'Dorji' %>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="emergencyRelationship" class="form-label">Relationship</label>
+                      <input type="text" class="form-control" id="emergencyRelationship" value="<%= user && user.emergencyContact ? user.emergencyContact.relationship : 'Father' %>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="emergencyPhone" class="form-label">Phone Number</label>
+                      <input type="tel" class="form-control" id="emergencyPhone" value="<%= user && user.emergencyContact ? user.emergencyContact.phone : '975-17789012' %>">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-end">
+                  <button type="submit" class="btn btn-primary" id="savePersonalBtn">Save Changes</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Academic Information Tab -->
+            <div class="tab-pane fade" id="academic" role="tabpanel" aria-labelledby="academic-tab">
+              <form id="academicForm">
+                <div class="row mb-3">
+                  <div class="col-md-6 mb-3">
+                    <label for="department" class="form-label">Department</label>
+                    <select class="form-select" id="department">
+                      <option value="DOAH" <%= user && user.department === 'DOAH' ? 'selected' : '' %>>Department of Arts and Humanities (DOAH)</option>
+                      <option value="DOSS" <%= user && user.department === 'DOSS' ? 'selected' : '' %>>Department of Social Sciences (DOSS)</option>
+                      <option value="DOELS" <%= user && user.department === 'DOELS' ? 'selected' : '' %>>Department of Environment & Life Science (DOELS)</option>
+                      <option value="DOPS" <%= user && user.department === 'DOPS' ? 'selected' : '' %>>Department of Physical Science (DOPS)</option>
+                      <option value="DOMS" <%= user && user.department === 'DOMS' ? 'selected' : '' %>>Department of Mathematical Sciences (DOMS)</option>
+                      <option value="FIRST" <%= user && user.department === 'FIRST' ? 'selected' : '' %>>New Programmes - First Year (FIRST)</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="course" class="form-label">Course</label>
+                    <input type="text" class="form-control" id="course" value="<%= user && user.course ? user.course : 'BSc in Physics' %>">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="year" class="form-label">Year</label>
+                    <select class="form-select" id="year">
+                      <option value="1" <%= user && user.year === '1' ? 'selected' : '' %>>First Year</option>
+                      <option value="2" <%= user && user.year === '2' ? 'selected' : '' %>>Second Year</option>
+                      <option value="3" <%= user && user.year === '3' ? 'selected' : '' %>>Third Year</option>
+                      <option value="4" <%= user && user.year === '4' ? 'selected' : '' %>>Fourth Year</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="semester" class="form-label">Current Semester</label>
+                    <input type="text" class="form-control" id="semester" value="<%= user && user.semester ? user.semester : 'Spring 2023' %>">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="enrollmentDate" class="form-label">Enrollment Date</label>
+                    <input type="date" class="form-control" id="enrollmentDate" value="<%= user && user.enrollmentDate ? user.enrollmentDate : '2021-08-15' %>">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="cgpa" class="form-label">CGPA</label>
+                    <input type="text" class="form-control" id="cgpa" value="<%= user && user.cgpa ? user.cgpa : '3.7' %>" disabled>
+                  </div>
+                </div>
+
+                <hr>
+
+                <div class="mb-4">
+                  <h5>Hostel Information</h5>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="hostel" class="form-label">Hostel</label>
+                      <select class="form-select" id="hostel">
+                        <option value="Thubtenling" <%= user && user.hostel === 'Thubtenling' ? 'selected' : '' %>>Thubtenling</option>
+                        <option value="Pemaling" <%= user && user.hostel === 'Pemaling' ? 'selected' : '' %>>Pemaling</option>
+                        <option value="Singye" <%= user && user.hostel === 'Singye' ? 'selected' : '' %>>Singye</option>
+                        <option value="Sherubling" <%= user && user.hostel === 'Sherubling' ? 'selected' : '' %>>Sherubling</option>
+                        <option value="None" <%= user && user.hostel === 'None' ? 'selected' : '' %>>None (Day Scholar)</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="roomNumber" class="form-label">Room Number</label>
+                      <input type="text" class="form-control" id="roomNumber" value="<%= user && user.roomNumber ? user.roomNumber : '203' %>">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-end">
+                  <button type="submit" class="btn btn-primary" id="saveAcademicBtn">Save Changes</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Account Settings Tab -->
+            <div class="tab-pane fade" id="account" role="tabpanel" aria-labelledby="account-tab">
+              <form id="passwordForm" class="mb-5">
+                <h5>Change Password</h5>
+                <div class="mb-3">
+                  <label for="currentPassword" class="form-label">Current Password</label>
+                  <input type="password" class="form-control" id="currentPassword" required>
+                </div>
+                <div class="mb-3">
+                  <label for="newPassword" class="form-label">New Password</label>
+                  <input type="password" class="form-control" id="newPassword" required>
+                </div>
+                <div class="mb-3">
+                  <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-control" id="confirmPassword" required>
+                </div>
+                <div class="text-end">
+                  <button type="submit" class="btn btn-primary" id="changePasswordBtn">Change Password</button>
+                </div>
+              </form>
+
+              <hr>
+
+              <div class="mb-3">
+                <h5>Account Management</h5>
+                <p class="text-muted small">These actions are permanent and cannot be undone.</p>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-outline-secondary">Export My Data</button>
+                  <button class="btn btn-danger">Delete Account</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Form submission handlers
+  document.getElementById('personalForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const saveBtn = document.getElementById('savePersonalBtn');
+    const originalText = saveBtn.textContent;
+    
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    
+    // Simulate API call
+    setTimeout(() => {
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
+      
+      // Show success message
+      alert('Personal information updated successfully!');
+    }, 1500);
+  });
+  
+  document.getElementById('academicForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const saveBtn = document.getElementById('saveAcademicBtn');
+    const originalText = saveBtn.textContent;
+    
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    
+    // Simulate API call
+    setTimeout(() => {
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
+      
+      // Show success message
+      alert('Academic information updated successfully!');
+    }, 1500);
+  });
+  
+  document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const changeBtn = document.getElementById('changePasswordBtn');
+    const originalText = changeBtn.textContent;
+    
+    // Simple validation
+    const newPass = document.getElementById('newPassword').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    
+    if (newPass !== confirmPass) {
+      alert('New password and confirmation do not match!');
+      return;
+    }
+    
+    changeBtn.disabled = true;
+    changeBtn.textContent = 'Changing Password...';
+    
+    // Simulate API call
+    setTimeout(() => {
+      changeBtn.disabled = false;
+      changeBtn.textContent = originalText;
+      
+      // Show success message and reset form
+      alert('Password changed successfully!');
+      this.reset();
+    }, 1500);
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Profile photo change
+    const photoInput = document.getElementById('profile-photo');
+    const uploadStatus = document.getElementById('upload-status');
+    const profileImage = document.querySelector('.img-thumbnail');
+    
+    photoInput.addEventListener('change', function(e) {
+      if (!this.files || !this.files[0]) return;
+      
+      const file = this.files[0];
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        uploadStatus.textContent = 'File is too large. Maximum size is 5MB.';
+        uploadStatus.className = 'small text-danger mt-1';
+        return;
+      }
+      
+      // Check file type
+      if (!file.type.match('image.*')) {
+        uploadStatus.textContent = 'Please select an image file.';
+        uploadStatus.className = 'small text-danger mt-1';
+        return;
+      }
+      
+      uploadStatus.textContent = 'Uploading...';
+      uploadStatus.className = 'small text-muted mt-1';
+      
+      // Create FormData
+      const formData = new FormData();
+      formData.append('profilePhoto', file);
+      
+      // In a real implementation, send to server
+      // For now, just show a preview
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        profileImage.src = e.target.result;
+        uploadStatus.textContent = 'Photo updated successfully!';
+        uploadStatus.className = 'small text-success mt-1';
+        
+        // After 3 seconds, clear the status
+        setTimeout(() => {
+          uploadStatus.textContent = '';
+        }, 3000);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports - Sherubtse College</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/faculty-header') %>
+
+  <main class="container py-4">
+    <% if (locals.success_msg) { %>
+      <div class="alert alert-success" role="alert">
+        <%= success_msg %>
+      </div>
+    <% } %>
+    
+    <% if (locals.error_msg) { %>
+      <div class="alert alert-danger" role="alert">
+        <%= error_msg %>
+      </div>
+    <% } %>
+
+    <div class="row">
+      <div class="col-md-12 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Attendance Reports</h5>
+            <span class="badge bg-primary">Faculty</span>
+          </div>
+          <div class="card-body">
+            <p>Generate and view attendance reports for your courses.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Report Parameters</h5>
+          </div>
+          <div class="card-body">
+            <form id="report-form">
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="report-course" class="form-label">Course</label>
+                  <select class="form-select" id="report-course" required>
+                    <option value="">Select Course</option>
+                    <option value="all">All My Courses</option>
+                    <!-- Will be populated via AJAX -->
+                  </select>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                  <label for="report-date-range" class="form-label">Date Range</label>
+                  <select class="form-select" id="report-date-range">
+                    <option value="today">Today</option>
+                    <option value="week" selected>This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="semester">This Semester</option>
+                    <option value="custom">Custom Range</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                  <label for="report-type" class="form-label">Report Type</label>
+                  <select class="form-select" id="report-type">
+                    <option value="summary" selected>Summary Report</option>
+                    <option value="detailed">Detailed Report</option>
+                    <option value="student">Student-wise Report</option>
+                    <option value="department">Department-wise Report</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div id="custom-date-range" class="row d-none">
+                <div class="col-md-6 mb-3">
+                  <label for="start-date" class="form-label">Start Date</label>
+                  <input type="date" class="form-control" id="start-date">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label for="end-date" class="form-label">End Date</label>
+                  <input type="date" class="form-control" id="end-date">
+                </div>
+              </div>
+              
+              <div class="row mb-3" id="additional-filters">
+                <div class="col-md-4">
+                  <label for="filter-department" class="form-label">Filter by Department</label>
+                  <select class="form-select" id="filter-department">
+                    <option value="">All Departments</option>
+                    <!-- Will be populated via JavaScript -->
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label for="filter-hostel" class="form-label">Filter by Hostel</label>
+                  <select class="form-select" id="filter-hostel">
+                    <option value="">All Hostels</option>
+                    <!-- Will be populated via JavaScript -->
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label for="filter-year" class="form-label">Filter by Year</label>
+                  <select class="form-select" id="filter-year">
+                    <option value="">All Years</option>
+                    <option value="1">Year 1</option>
+                    <option value="2">Year 2</option>
+                    <option value="3">Year 3</option>
+                    <option value="4">Year 4</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="text-end">
+                <button type="button" id="reset-filters" class="btn btn-outline-secondary me-2">Reset Filters</button>
+                <button type="submit" class="btn btn-primary">Generate Report</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="report-result" class="d-none">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Report Results</h5>
+          <div>
+            <button id="export-csv" class="btn btn-sm btn-outline-secondary me-2">Export to CSV</button>
+            <button id="print-report" class="btn btn-sm btn-outline-secondary">Print</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="report-content">
+            <!-- Report content will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Elements
+      const reportForm = document.getElementById('report-form');
+      const reportCourse = document.getElementById('report-course');
+      const reportDateRange = document.getElementById('report-date-range');
+      const reportType = document.getElementById('report-type');
+      const customDateRange = document.getElementById('custom-date-range');
+      const startDate = document.getElementById('start-date');
+      const endDate = document.getElementById('end-date');
+      const reportResult = document.getElementById('report-result');
+      const reportContent = document.getElementById('report-content');
+      const exportCsv = document.getElementById('export-csv');
+      const printReport = document.getElementById('print-report');
+      const filterDepartment = document.getElementById('filter-department');
+      const filterHostel = document.getElementById('filter-hostel');
+      const filterYear = document.getElementById('filter-year');
+      const resetFilters = document.getElementById('reset-filters');
+      
+      // Mock data for reports
+      let mockReportData = [];
+      
+      // Load courses
+      function loadCourses() {
+        // In a real implementation, this would fetch from your API
+        // For this example, we'll use mock data
+        const mockCourses = [
+          { id: 'CSC101', name: 'Introduction to Computer Science' },
+          { id: 'CSC202', name: 'Data Structures and Algorithms' },
+          { id: 'MTH201', name: 'Calculus II' },
+          { id: 'PHY102', name: 'Physics for Engineers' }
+        ];
+        
+        let courseOptions = `
+          <option value="">Select Course</option>
+          <option value="all">All My Courses</option>
+        `;
+        
+        mockCourses.forEach(course => {
+          courseOptions += `<option value="${course.id}">${course.id} - ${course.name}</option>`;
+        });
+        
+        reportCourse.innerHTML = courseOptions;
+      }
+      
+      // Load filter options
+      function loadFilterOptions() {
+        // Department options
+        const departments = ['DOAH', 'DOSS', 'DOELS', 'DOPS', 'DOMS', 'NEW', 'FIRST'];
+        let departmentOptions = '<option value="">All Departments</option>';
+        departments.forEach(dept => {
+          departmentOptions += `<option value="${dept}">${dept}</option>`;
+        });
+        filterDepartment.innerHTML = departmentOptions;
+        
+        // Hostel options
+        const hostels = [
+          'Thubtenling', 'Minjurling', 'Yentenling', 'Rabtaling',
+          'Pemaling', 'Gatsheling', 'Gakiling', 'Yetsholing'
+        ];
+        let hostelOptions = '<option value="">All Hostels</option>';
+        hostels.forEach(hostel => {
+          hostelOptions += `<option value="${hostel}">${hostel}</option>`;
+        });
+        filterHostel.innerHTML = hostelOptions;
+      }
+      
+      // Show/hide custom date range
+      reportDateRange.addEventListener('change', function() {
+        if (this.value === 'custom') {
+          customDateRange.classList.remove('d-none');
+        } else {
+          customDateRange.classList.add('d-none');
+        }
+      });
+      
+      // Reset filters
+      resetFilters.addEventListener('click', function() {
+        filterDepartment.value = '';
+        filterHostel.value = '';
+        filterYear.value = '';
+      });
+      
+      // Generate mock report data
+      function generateMockReportData() {
+        const departments = ['DOAH', 'DOSS', 'DOELS', 'DOPS', 'DOMS', 'NEW', 'FIRST'];
+        const courses = [
+          'BA in Dzongkha & English',
+          'BA in English',
+          'BA in History',
+          'BSc in Mathematics',
+          'BSc in Physics',
+          'BSc in Chemistry'
+        ];
+        const hostels = [
+          'Thubtenling', 'Minjurling', 'Yentenling', 'Rabtaling',
+          'Pemaling', 'Gatsheling', 'Gakiling', 'Yetsholing'
+        ];
+        const genders = ['Male', 'Female'];
+        const years = ['1', '2', '3', '4'];
+        
+        // Generate 50 random student records
+        const records = [];
+        for (let i = 1; i <= 50; i++) {
+          const dept = departments[Math.floor(Math.random() * departments.length)];
+          const course = courses[Math.floor(Math.random() * courses.length)];
+          const hostel = hostels[Math.floor(Math.random() * hostels.length)];
+          const gender = genders[Math.floor(Math.random() * genders.length)];
+          const year = years[Math.floor(Math.random() * years.length)];
+          const totalClasses = Math.floor(Math.random() * 10) + 10; // 10-20 classes
+          const attendedClasses = Math.floor(Math.random() * totalClasses);
+          const attendanceRate = Math.round((attendedClasses / totalClasses) * 100);
+          
+          records.push({
+            id: i,
+            studentId: '1000' + i,
+            studentName: `Student ${i}`,
+            department: dept,
+            course: course,
+            hostel: hostel,
+            gender: gender,
+            year: year,
+            totalClasses: totalClasses,
+            attendedClasses: attendedClasses,
+            attendanceRate: attendanceRate
+          });
+        }
+        
+        return records;
+      }
+      
+      // Filter report data
+      function filterReportData(records, filters) {
+        return records.filter(record => {
+          // Check department filter
+          if (filters.department && record.department !== filters.department) {
+            return false;
+          }
+          
+          // Check hostel filter
+          if (filters.hostel && record.hostel !== filters.hostel) {
+            return false;
+          }
+          
+          // Check year filter
+          if (filters.year && record.year !== filters.year) {
+            return false;
+          }
+          
+          return true;
+        });
+      }
+      
+      // Generate report
+      reportForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const course = reportCourse.value;
+        const dateRange = reportDateRange.value;
+        const reportTypeValue = reportType.value;
+        
+        // Validate inputs
+        if (!course) {
+          alert('Please select a course');
+          return;
+        }
+        
+        // Get date range values
+        let startDateValue = '';
+        let endDateValue = '';
+        
+        if (dateRange === 'custom') {
+          startDateValue = startDate.value;
+          endDateValue = endDate.value;
+          
+          if (!startDateValue || !endDateValue) {
+            alert('Please select both start and end dates');
+            return;
+          }
+        } else {
+          // Calculate dates based on selection
+          const today = new Date();
+          endDateValue = today.toISOString().split('T')[0];
+          
+          if (dateRange === 'today') {
+            startDateValue = endDateValue;
+          } else if (dateRange === 'week') {
+            const lastWeek = new Date(today);
+            lastWeek.setDate(today.getDate() - 7);
+            startDateValue = lastWeek.toISOString().split('T')[0];
+          } else if (dateRange === 'month') {
+            const lastMonth = new Date(today);
+            lastMonth.setMonth(today.getMonth() - 1);
+            startDateValue = lastMonth.toISOString().split('T')[0];
+          } else if (dateRange === 'semester') {
+            const lastSemester = new Date(today);
+            lastSemester.setMonth(today.getMonth() - 6);
+            startDateValue = lastSemester.toISOString().split('T')[0];
+          }
+        }
+        
+        // Get filter values
+        const filters = {
+          department: filterDepartment.value,
+          hostel: filterHostel.value,
+          year: filterYear.value
+        };
+        
+        // Show loading
+        reportContent.innerHTML = `
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Generating report...</p>
+          </div>
+        `;
+        
+        reportResult.classList.remove('d-none');
+        
+        // Generate mock data if not already generated
+        if (mockReportData.length === 0) {
+          mockReportData = generateMockReportData();
+        }
+        
+        // In a real implementation, this would call your API
+        // For this example, we'll simulate an API call
+        setTimeout(() => {
+          // Filter data based on selected filters
+          const filteredData = filterReportData(mockReportData, filters);
+          
+          // Generate report content based on report type
+          generateReportContent(course, startDateValue, endDateValue, reportTypeValue, filteredData);
+        }, 1500);
+      });
+      
+      // Generate report content
+      function generateReportContent(course, startDate, endDate, reportType, data) {
+        // In a real implementation, this would process data from your API
+        // For this example, we'll use the filtered mock data
+        
+        if (reportType === 'summary') {
+          // Summary report
+          reportContent.innerHTML = `
+            <div class="mb-4">
+              <h4>Attendance Summary Report</h4>
+              <p>Course: ${course === 'all' ? 'All Courses' : course}</p>
+              <p>Period: ${startDate} to ${endDate}</p>
+              ${Object.values(data.length > 0 ? {
+                department: filterDepartment.value,
+                hostel: filterHostel.value,
+                year: filterYear.value
+              } : {}).filter(Boolean).length > 0 ? `
+              <p>Filters: ${filterDepartment.value ? 'Department: ' + filterDepartment.value : ''}
+                 ${filterHostel.value ? 'Hostel: ' + filterHostel.value : ''}
+                 ${filterYear.value ? 'Year: ' + filterYear.value : ''}</p>
+              ` : ''}
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Course</th>
+                    <th>Total Classes</th>
+                    <th>Total Students</th>
+                    <th>Average Attendance</th>
+                    <th>Attendance Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>CSC101</td>
+                    <td>12</td>
+                    <td>${data.length}</td>
+                    <td>${Math.round(data.reduce((sum, record) => sum + record.attendanceRate, 0) / data.length)}%</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                          <div class="progress-bar ${getProgressBarColor(Math.round(data.reduce((sum, record) => sum + record.attendanceRate, 0) / data.length))}" role="progressbar" style="width: ${Math.round(data.reduce((sum, record) => sum + record.attendanceRate, 0) / data.length)}%"></div>
+                        </div>
+                        <span>${Math.round(data.reduce((sum, record) => sum + record.attendanceRate, 0) / data.length)}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else if (reportType === 'department') {
+          // Department-wise report
+          // Group data by department
+          const departmentData = {};
+          data.forEach(record => {
+            if (!departmentData[record.department]) {
+              departmentData[record.department] = {
+                totalStudents: 0,
+                totalAttendance: 0
+              };
+            }
+            departmentData[record.department].totalStudents++;
+            departmentData[record.department].totalAttendance += record.attendanceRate;
+          });
+          
+          // Calculate average attendance for each department
+          Object.keys(departmentData).forEach(dept => {
+            departmentData[dept].averageAttendance = Math.round(
+              departmentData[dept].totalAttendance / departmentData[dept].totalStudents
+            );
+          });
+          
+          let departmentRows = '';
+          Object.keys(departmentData).forEach(dept => {
+            departmentRows += `
+              <tr>
+                <td>${dept}</td>
+                <td>${departmentData[dept].totalStudents}</td>
+                <td>${departmentData[dept].averageAttendance}%</td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                      <div class="progress-bar ${getProgressBarColor(departmentData[dept].averageAttendance)}" role="progressbar" style="width: ${departmentData[dept].averageAttendance}%"></div>
+                    </div>
+                    <span>${departmentData[dept].averageAttendance}%</span>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+          
+          reportContent.innerHTML = `
+            <div class="mb-4">
+              <h4>Department-wise Attendance Report</h4>
+              <p>Course: ${course === 'all' ? 'All Courses' : course}</p>
+              <p>Period: ${startDate} to ${endDate}</p>
+              ${Object.values(data.length > 0 ? {
+                department: filterDepartment.value,
+                hostel: filterHostel.value,
+                year: filterYear.value
+              } : {}).filter(Boolean).length > 0 ? `
+              <p>Filters: ${filterDepartment.value ? 'Department: ' + filterDepartment.value : ''}
+                 ${filterHostel.value ? 'Hostel: ' + filterHostel.value : ''}
+                 ${filterYear.value ? 'Year: ' + filterYear.value : ''}</p>
+              ` : ''}
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Department</th>
+                    <th>Total Students</th>
+                    <th>Average Attendance</th>
+                    <th>Attendance Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${departmentRows}
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else {
+          // Detailed or student-wise report
+          let studentRows = '';
+          data.forEach(record => {
+            studentRows += `
+              <tr>
+                <td>${record.studentId}</td>
+                <td>${record.studentName}</td>
+                <td>${record.department}</td>
+                <td>${record.course}</td>
+                <td>${record.hostel}</td>
+                <td>${record.attendedClasses}</td>
+                <td>${record.totalClasses}</td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                      <div class="progress-bar ${getProgressBarColor(record.attendanceRate)}" role="progressbar" style="width: ${record.attendanceRate}%"></div>
+                    </div>
+                    <span>${record.attendanceRate}%</span>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+          
+          reportContent.innerHTML = `
+            <div class="mb-4">
+              <h4>${reportType === 'detailed' ? 'Detailed' : 'Student-wise'} Attendance Report</h4>
+              <p>Course: ${course === 'all' ? 'All Courses' : course}</p>
+              <p>Period: ${startDate} to ${endDate}</p>
+              ${Object.values(data.length > 0 ? {
+                department: filterDepartment.value,
+                hostel: filterHostel.value,
+                year: filterYear.value
+              } : {}).filter(Boolean).length > 0 ? `
+              <p>Filters: ${filterDepartment.value ? 'Department: ' + filterDepartment.value : ''}
+                 ${filterHostel.value ? 'Hostel: ' + filterHostel.value : ''}
+                 ${filterYear.value ? 'Year: ' + filterYear.value : ''}</p>
+              ` : ''}
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Course</th>
+                    <th>Hostel</th>
+                    <th>Classes Attended</th>
+                    <th>Total Classes</th>
+                    <th>Attendance %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${studentRows}
+                </tbody>
+              </table>
+            </div>
+          `;
+        }
+      }
+      
+      // Helper function to get progress bar color based on attendance rate
+      function getProgressBarColor(rate) {
+        if (rate >= 85) return 'bg-success';
+        if (rate >= 70) return 'bg-info';
+        if (rate >= 50) return 'bg-warning';
+        return 'bg-danger';
+      }
+      
+      // Export to CSV
+      exportCsv.addEventListener('click', function() {
+        alert('Exporting to CSV... (This would download a CSV file in a real implementation)');
+      });
+      
+      // Print report
+      printReport.addEventListener('click', function() {
+        window.print();
+      });
+      
+      // Initialize
+      loadCourses();
+      loadFilterOptions();
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

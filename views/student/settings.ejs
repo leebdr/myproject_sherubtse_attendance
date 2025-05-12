@@ -1,0 +1,245 @@
+<%- include('../partials/student-header') %>
+
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Settings</h1>
+    <span class="badge bg-primary">Student</span>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Account Settings</h5>
+      <p class="card-text">Manage your account preferences and settings.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3 mb-4">
+      <div class="list-group">
+        <a href="#notifications" class="list-group-item list-group-item-action active" data-bs-toggle="list">Notifications</a>
+        <a href="#privacy" class="list-group-item list-group-item-action" data-bs-toggle="list">Privacy</a>
+        <a href="#appearance" class="list-group-item list-group-item-action" data-bs-toggle="list">Appearance</a>
+        <a href="#accessibility" class="list-group-item list-group-item-action" data-bs-toggle="list">Accessibility</a>
+      </div>
+    </div>
+    
+    <div class="col-md-9">
+      <div class="tab-content">
+        <!-- Notifications Settings -->
+        <div class="tab-pane fade show active" id="notifications">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Notification Settings</h5>
+            </div>
+            <div class="card-body">
+              <form id="notificationsForm">
+                <div class="mb-4">
+                  <h6 class="fw-bold">Email Notifications</h6>
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="emailAttendance" checked>
+                    <label class="form-check-label" for="emailAttendance">Attendance confirmations</label>
+                  </div>
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="emailCourseUpdates" checked>
+                    <label class="form-check-label" for="emailCourseUpdates">Course updates</label>
+                  </div>
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="emailAnnouncements" checked>
+                    <label class="form-check-label" for="emailAnnouncements">College announcements</label>
+                  </div>
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="emailReminders">
+                    <label class="form-check-label" for="emailReminders">Class reminders</label>
+                  </div>
+                </div>
+                
+                <div class="mb-4">
+                  <h6 class="fw-bold">Push Notifications</h6>
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="pushAttendance" checked>
+                    <label class="form-check-label" for="pushAttendance">Attendance confirmations</label>
+                  </div>
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="pushCourseUpdates">
+                    <label class="form-check-label" for="pushCourseUpdates">Course updates</label>
+                  </div>
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="pushAnnouncements">
+                    <label class="form-check-label" for="pushAnnouncements">College announcements</label>
+                  </div>
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="pushReminders" checked>
+                    <label class="form-check-label" for="pushReminders">Class reminders</label>
+                  </div>
+                </div>
+                
+                <div class="text-end">
+                  <button type="submit" class="btn btn-primary" id="saveNotificationsBtn">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Privacy Settings -->
+        <div class="tab-pane fade" id="privacy">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Privacy Settings</h5>
+            </div>
+            <div class="card-body">
+              <form id="privacyForm">
+                <div class="mb-4">
+                  <h6 class="fw-bold">Profile Visibility</h6>
+                  <div class="mb-3">
+                    <label class="form-label">Who can see my profile information?</label>
+                    <select class="form-select">
+                      <option value="everyone">Everyone at Sherubtse College</option>
+                      <option value="faculty">Faculty and Administrators only</option>
+                      <option value="department">My Department only</option>
+                      <option value="none">Only me</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="mb-4">
+                  <h6 class="fw-bold">Data Usage</h6>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="dataAnalytics" checked>
+                    <label class="form-check-label" for="dataAnalytics">
+                      Allow my attendance data to be used for college analytics
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="locationTracking" checked>
+                    <label class="form-check-label" for="locationTracking">
+                      Enable location verification for attendance
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="text-end">
+                  <button type="submit" class="btn btn-primary" id="savePrivacyBtn">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Appearance Settings -->
+        <div class="tab-pane fade" id="appearance">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Appearance Settings</h5>
+            </div>
+            <div class="card-body">
+              <form id="appearanceForm">
+                <div class="mb-4">
+                  <h6 class="fw-bold">Theme</h6>
+                  <div class="mb-3">
+                    <label class="form-label">Color Theme</label>
+                    <select class="form-select">
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="system">System Default</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="mb-4">
+                  <h6 class="fw-bold">Dashboard Layout</h6>
+                  <div class="mb-3">
+                    <label class="form-label">Default Dashboard View</label>
+                    <select class="form-select">
+                      <option value="scan">QR Scanner</option>
+                      <option value="history">Attendance History</option>
+                      <option value="courses">My Courses</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="text-end">
+                  <button type="submit" class="btn btn-primary" id="saveAppearanceBtn">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Accessibility Settings -->
+        <div class="tab-pane fade" id="accessibility">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Accessibility Settings</h5>
+            </div>
+            <div class="card-body">
+              <form id="accessibilityForm">
+                <div class="mb-4">
+                  <h6 class="fw-bold">Text Options</h6>
+                  <div class="mb-3">
+                    <label class="form-label">Font Size</label>
+                    <select class="form-select">
+                      <option value="small">Small</option>
+                      <option value="medium" selected>Medium</option>
+                      <option value="large">Large</option>
+                      <option value="x-large">Extra Large</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="mb-4">
+                  <h6 class="fw-bold">Motion</h6>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="reduceMotion">
+                    <label class="form-check-label" for="reduceMotion">
+                      Reduce motion (minimize animations)
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="mb-4">
+                  <h6 class="fw-bold">Screen Reader</h6>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="screenReader">
+                    <label class="form-check-label" for="screenReader">
+                      Optimize for screen readers
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="text-end">
+                  <button type="submit" class="btn btn-primary" id="saveAccessibilityBtn">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Form submission handlers
+  document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const saveBtn = this.querySelector('button[type="submit"]');
+      const originalText = saveBtn.textContent;
+      
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+      
+      // Simulate API call
+      setTimeout(() => {
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalText;
+        
+        // Show success message
+        alert('Settings updated successfully!');
+      }, 1500);
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

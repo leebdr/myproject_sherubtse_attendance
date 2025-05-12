@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="bg-primary text-white py-4">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <img src="/img/logo.png" alt="Sherubtse College Logo" class="me-2" width="40" height="40">
+          <h1 class="h4 mb-0">Sherubtse College</h1>
+        </div>
+        <div>
+          <% if (user) { %>
+            <a href="/<%= user.role %>/dashboard" class="btn btn-outline-light me-2">Dashboard</a>
+            <a href="/logout" class="btn btn-light">Logout</a>
+          <% } else { %>
+            <a href="/login" class="btn btn-outline-light me-2">Login</a>
+            <a href="/register" class="btn btn-light">Register</a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="py-5 text-center container">
+      <div class="row py-lg-5">
+        <div class="col-lg-6 col-md-8 mx-auto">
+          <h1 class="fw-light">Advanced Attendance Tracking System</h1>
+          <p class="lead text-muted">Secure, reliable attendance tracking with facial recognition, QR code scanning, and GPS verification.</p>
+          <p>
+            <a href="/register" class="btn btn-primary my-2">Get Started</a>
+            <a href="#features" class="btn btn-secondary my-2">Learn More</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="container" id="features">
+      <div class="row mb-5">
+        <div class="col-md-4">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-body text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-qr-code text-primary mb-3" viewBox="0 0 16 16">
+                <path d="M2 2h2v2H2V2Z"/>
+                <path d="M6 0v6H0V0h6ZM5 1H1v4h4V1ZM4 12H2v2h2v-2Z"/>
+                <path d="M6 10v6H0v-6h6Zm-5 1v4h4v-4H1Zm11-9h2v2h-2V2Z"/>
+                <path d="M10 0v6h6V0h-6Zm5 1v4h-4V1h4ZM8 1V0h1v2H8v2H7V1h1Zm0 5V4h1v2H8ZM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8H6Zm0 0v1H2V8H1v1H0V7h3v1h3Zm10 1h-1V7h1v2Zm-1 0h-1v2h2v-1h-1V9Zm-4 0h2v1h-1v1h-1V9Zm2 3v-1h-1v1h-1v1H9v1h3v-2h1Zm0 0h3v1h-2v1h-1v-2Zm-4-1v1h1v-2H7v1h2Z"/>
+                <path d="M7 12h1v3h4v1H7v-4Zm9 2v2h-3v-1h2v-1h1Z"/>
+              </svg>
+              <h4>QR Code Scanning</h4>
+              <p>Faculty generates time and location-bound QR codes for each session.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-body text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-person-badge text-primary mb-3" viewBox="0 0 16 16">
+                <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5v10.795a4.2 4.2 0 0 0-.776-.492C11.392 12.387 10.063 12 8 12s-3.392.387-4.224.803a4.2 4.2 0 0 0-.776.492V2.5z"/>
+              </svg>
+              <h4>Facial Recognition</h4>
+              <p>Regula SDK captures and verifies student identity through facial recognition.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-body text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-geo-alt text-primary mb-3" viewBox="0 0 16 16">
+                <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
+                <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+              </svg>
+              <h4>GPS Verification</h4>
+              <p>Ensures students are physically present within the class location radius.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-5">
+        <div class="card-header">
+          <h3>Role-Based Access</h3>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Email Pattern</th>
+                  <th>Role</th>
+                  <th>Access</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>number.sherubtse@rub.edu.bt</td>
+                  <td>Student</td>
+                  <td>Scan QR, verify identity</td>
+                </tr>
+                <tr>
+                  <td>letter.sherubtse@rub.edu.bt</td>
+                  <td>Faculty</td>
+                  <td>Generate QR, view attendance</td>
+                </tr>
+                <tr>
+                  <td>admin.sherubtse@rub.edu.bt</td>
+                  <td>Admin</td>
+                  <td>Manage users, view reports</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-light py-4 mt-5">
+    <div class="container text-center">
+      <p class="text-muted">© <%= new Date().getFullYear() %> Sherubtse College Attendance Tracker. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

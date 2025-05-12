@@ -1,0 +1,486 @@
+<header>
+  <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <img src="/images/logo.png" alt="Sherubtse College" height="30" class="me-2">
+        Sherubtse College
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link <%= active === 'dashboard' ? 'active' : '' %>" href="/admin/dashboard">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/users">Users</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/courses">Courses</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/reports">Reports</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">Settings</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <% if (user.profilePhoto) { %>
+                <img src="<%= user.profilePhoto %>" alt="<%= user.name %>" class="rounded-circle me-1" width="24" height="24">
+              <% } else { %>
+                <img src="/images/avatar.png" alt="<%= user.name %>" class="rounded-circle me-1" width="24" height="24">
+              <% } %>
+              <%= user.name %> <span class="badge bg-light text-primary ms-1">Admin</span>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="/admin/profile">Profile</a></li>
+              <li><a class="dropdown-item" href="/admin/settings">Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+Let me complete the rest of the implementation for the admin dashboard by updating the dashboard view to work with our new controller:
+
+```plaintext file="views/admin/dashboard.ejs"
+&lt;!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - Sherubtse College</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/admin-header') %>
+
+  <main class="container py-4">
+    <% if (locals.success_msg) { %>
+      <div class="alert alert-success" role="alert">
+        <%= success_msg %>
+      </div>
+    <% } %>
+    
+    <% if (locals.error_msg) { %>
+      <div class="alert alert-danger" role="alert">
+        <%= error_msg %>
+      </div>
+    <% } %>
+
+    <div class="row">
+      <div class="col-md-12 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Admin Dashboard</h5>
+            <span class="badge bg-primary">Admin</span>
+          </div>
+          <div class="card-body">
+            <p>Welcome, <%= user.name %>!</p>
+            <p>Use the dashboard to manage users, courses, and view attendance reports.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title text-muted">Total Users</h5>
+            <h2 class="display-4" id="total-users"><%= totalUsers %></h2>
+            <p class="text-muted" id="user-breakdown"><%= students %> students, <%= faculty %> faculty</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title text-muted">Total Courses</h5>
+            <h2 class="display-4" id="total-courses"><%= totalCourses %></h2>
+            <p class="text-muted" id="course-breakdown">Across <%= departments %> departments</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title text-muted">Average Attendance</h5>
+            <h2 class="display-4" id="avg-attendance"><%= avgAttendance %>%</h2>
+            <p class="text-muted">Across all courses</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="true">Manage Users</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses" type="button" role="tab" aria-controls="courses" aria-selected="false">Manage Courses</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab" aria-controls="reports" aria-selected="false">Attendance Reports</button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+      &lt;!-- Users Tab -->
+      <div class="tab-pane fade show active" id="users" role="tabpanel" aria-labelledby="users-tab">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">User Management</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="input-group">
+                  <input type="text" class="form-control" id="user-search" placeholder="Search by name or email...">
+                  <button class="btn btn-outline-secondary" type="button" id="user-search-btn">Search</button>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <select class="form-select" id="user-role-filter">
+                  <option value="all">All Roles</option>
+                  <option value="student">Students</option>
+                  <option value="faculty">Faculty</option>
+                  <option value="admin">Admins</option>
+                </select>
+              </div>
+              <div class="col-md-3 text-end">
+                <a href="/admin/users" class="btn btn-primary">Manage Users</a>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table">
+                  &lt;!-- Will be populated via JavaScript -->
+                  <tr>
+                    <td colspan="5" class="text-center">Loading users...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      &lt;!-- Courses Tab -->
+      <div class="tab-pane fade" id="courses" role="tabpanel" aria-labelledby="courses-tab">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Course Management</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-9">
+                <div class="input-group">
+                  <input type="text" class="form-control" id="course-search" placeholder="Search courses...">
+                  <button class="btn btn-outline-secondary" type="button" id="course-search-btn">Search</button>
+                </div>
+              </div>
+              <div class="col-md-3 text-end">
+                <a href="/admin/courses" class="btn btn-primary">Manage Courses</a>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Faculty</th>
+                    <th>Students</th>
+                    <th>Department</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="courses-table">
+                  &lt;!-- Will be populated via JavaScript -->
+                  <tr>
+                    <td colspan="6" class="text-center">Loading courses...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      &lt;!-- Reports Tab -->
+      <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Attendance Reports</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-3">
+                <label for="report-date-range" class="form-label">Date Range</label>
+                <select class="form-select" id="report-date-range">
+                  <option value="today">Today</option>
+                  <option value="thisWeek" selected>This Week</option>
+                  <option value="thisMonth">This Month</option>
+                  <option value="lastMonth">Last Month</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label for="report-department-filter" class="form-label">Department</label>
+                <select class="form-select" id="report-department-filter">
+                  <option value="all" selected>All Departments</option>
+                  <option value="cs">Computer Science</option>
+                  <option value="math">Mathematics</option>
+                  <option value="physics">Physics</option>
+                </select>
+              </div>
+              <div class="col-md-6 text-end align-self-end">
+                <a href="/admin/reports" class="btn btn-primary">View Full Reports</a>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Attendance %</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reports-table">
+                  &lt;!-- Will be populated via JavaScript -->
+                  <tr>
+                    <td colspan="6" class="text-center">Loading reports...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load users data
+      function loadUsers() {
+        // In a real implementation, this would fetch from your API
+        // For this example, we'll use mock data
+        const mockUsers = [
+          { id: 1, name: 'John Smith', email: '12345.sherubtse@rub.edu.bt', role: 'student', status: 'active' },
+          { id: 2, name: 'Jane Doe', email: '12346.sherubtse@rub.edu.bt', role: 'student', status: 'active' },
+          { id: 3, name: 'Dr. Robert Johnson', email: 'robert.sherubtse@rub.edu.bt', role: 'faculty', status: 'active' },
+          { id: 4, name: 'Prof. Sarah Williams', email: 'sarah.sherubtse@rub.edu.bt', role: 'faculty', status: 'active' },
+          { id: 5, name: 'Admin User', email: 'admin.sherubtse@rub.edu.bt', role: 'admin', status: 'active' },
+          { id: 6, name: 'Charlie Brown', email: '12349.sherubtse@rub.edu.bt', role: 'student', status: 'inactive' }
+        ];
+        
+        const usersTable = document.getElementById('users-table');
+        let html = '';
+        
+        mockUsers.forEach(user => {
+          html += `
+            <tr>
+              <td>${user.name}</td>
+              <td>${user.email}</td>
+              <td><span class="text-capitalize">${user.role}</span></td>
+              <td>
+                <span class="badge ${user.status === 'active' ? 'bg-success' : 'bg-danger'}">
+                  ${user.status}
+                </span>
+              </td>
+              <td>
+                <a href="/admin/users" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                <a href="/admin/users" class="btn btn-sm ${user.status === 'active' ? 'btn-outline-danger' : 'btn-outline-success'}">
+                  ${user.status === 'active' ? 'Deactivate' : 'Activate'}
+                </a>
+              </td>
+            </tr>
+          `;
+        });
+        
+        usersTable.innerHTML = html;
+      }
+      
+      // Load courses data
+      function loadCourses() {
+        // In a real implementation, this would fetch from your API
+        // For this example, we'll use mock data
+        const mockCourses = [
+          { id: 'CSC101', name: 'Introduction to Computer Science', faculty: 'Dr. Robert Johnson', students: 45, department: 'Computer Science' },
+          { id: 'CSC202', name: 'Data Structures and Algorithms', faculty: 'Dr. Robert Johnson', students: 38, department: 'Computer Science' },
+          { id: 'MTH201', name: 'Calculus II', faculty: 'Prof. Sarah Williams', students: 52, department: 'Mathematics' },
+          { id: 'PHY102', name: 'Physics for Engineers', faculty: 'Dr. Michael Brown', students: 41, department: 'Physics' }
+        ];
+        
+        const coursesTable = document.getElementById('courses-table');
+        let html = '';
+        
+        mockCourses.forEach(course => {
+          html += `
+            <tr>
+              <td>${course.id}</td>
+              <td>${course.name}</td>
+              <td>${course.faculty}</td>
+              <td>${course.students}</td>
+              <td>${course.department}</td>
+              <td>
+                <a href="/admin/courses" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                <a href="/admin/courses" class="btn btn-sm btn-outline-secondary">View</a>
+              </td>
+            </tr>
+          `;
+        });
+        
+        coursesTable.innerHTML = html;
+      }
+      
+      // Load reports data
+      function loadReports() {
+        // In a real implementation, this would fetch from your API
+        // For this example, we'll use mock data
+        const mockReports = [
+          { id: 'CSC101', name: 'Introduction to Computer Science', present: 40, absent: 5, percentage: 89 },
+          { id: 'CSC202', name: 'Data Structures and Algorithms', present: 35, absent: 3, percentage: 92 },
+          { id: 'MTH201', name: 'Calculus II', present: 48, absent: 4, percentage: 92 },
+          { id: 'PHY102', name: 'Physics for Engineers', present: 36, absent: 5, percentage: 88 }
+        ];
+        
+        const reportsTable = document.getElementById('reports-table');
+        let html = '';
+        
+        mockReports.forEach(report => {
+          html += `
+            <tr>
+              <td>${report.id}</td>
+              <td>${report.name}</td>
+              <td>${report.present}</td>
+              <td>${report.absent}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: ${report.percentage}%"></div>
+                  </div>
+                  <span>${report.percentage}%</span>
+                </div>
+              </td>
+              <td>
+                <a href="/admin/reports" class="btn btn-sm btn-outline-secondary">View Details</a>
+              </td>
+            </tr>
+          `;
+        });
+        
+        reportsTable.innerHTML = html;
+      }
+
+      // Load all data
+      loadUsers();
+      loadCourses();
+      loadReports();
+
+      // Handle user search
+      const userSearchInput = document.getElementById('user-search');
+      const userSearchBtn = document.getElementById('user-search-btn');
+      const userRoleFilter = document.getElementById('user-role-filter');
+
+      userSearchBtn.addEventListener('click', function() {
+        const searchTerm = userSearchInput.value.toLowerCase();
+        const role = userRoleFilter.value;
+        
+        const rows = document.querySelectorAll('#users-table tr');
+        
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          if (cells.length > 0) {
+            const name = cells[0].textContent.toLowerCase();
+            const email = cells[1].textContent.toLowerCase();
+            const userRole = cells[2].textContent.toLowerCase();
+            
+            const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+            const matchesRole = role === 'all' || userRole.includes(role);
+            
+            if (matchesSearch && matchesRole) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          }
+        });
+      });
+
+      // Handle course search
+      const courseSearchInput = document.getElementById('course-search');
+      const courseSearchBtn = document.getElementById('course-search-btn');
+
+      courseSearchBtn.addEventListener('click', function() {
+        const searchTerm = courseSearchInput.value.toLowerCase();
+        
+        const rows = document.querySelectorAll('#courses-table tr');
+        
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          if (cells.length > 0) {
+            const id = cells[0].textContent.toLowerCase();
+            const name = cells[1].textContent.toLowerCase();
+            const faculty = cells[2].textContent.toLowerCase();
+            const department = cells[4].textContent.toLowerCase();
+            
+            if (id.includes(searchTerm) || name.includes(searchTerm) || 
+                faculty.includes(searchTerm) || department.includes(searchTerm)) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          }
+        });
+      });
+
+      // Handle report filters
+      const reportDateRange = document.getElementById('report-date-range');
+      const reportDepartmentFilter = document.getElementById('report-department-filter');
+
+      reportDateRange.addEventListener('change', function() {
+        // In a real app, this would refresh the data based on the selected filters
+        console.log('Date range changed:', this.value);
+      });
+
+      reportDepartmentFilter.addEventListener('change', function() {
+        // In a real app, this would refresh the data based on the selected filters
+        console.log('Department filter changed:', this.value);
+      });
+    });
+  </script>
+</body>
+</html>

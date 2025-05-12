@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Sherubtse Attendance System</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-header text-center">
+            <img src="/img/logo.png" alt="Sherubtse College Logo" class="img-fluid mb-3" style="max-height: 80px;">
+            <h2>Create an Account</h2>
+            <p class="text-muted">Register with your institutional email</p>
+          </div>
+          <div class="card-body">
+            <% if (locals.error_msg) { %>
+              <div class="alert alert-danger" role="alert">
+                <%= error_msg %>
+              </div>
+            <% } %>
+            
+            <% if (locals.errors && errors.length > 0) { %>
+              <div class="alert alert-danger" role="alert">
+                <ul class="mb-0">
+                  <% errors.forEach(function(error) { %>
+                    <li><%= error.msg %></li>
+                  <% }); %>
+                </ul>
+              </div>
+            <% } %>
+            
+            <form action="/register" method="POST">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="fullName" class="form-label">Full Name</label>
+                  <input type="text" class="form-control" id="fullName" name="fullName" value="<%= locals.fullName || '' %>" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label for="email" class="form-label">Institutional Email</label>
+                  <input type="email" class="form-control" id="email" name="email" value="<%= locals.email || '' %>" placeholder="your.email@rub.edu.bt" required>
+                  <div id="roleDetection" class="form-text mt-1"></div>
+                </div>
+              </div>
+
+              <!-- Student-specific fields - initially hidden -->
+              <div id="studentFields" style="display: none;">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="studentId" class="form-label">Student ID</label>
+                    <input type="text" class="form-control" id="studentId" name="studentId" value="<%= locals.studentId || '' %>" placeholder="e.g., 12345">
+                    <div class="form-text">Enter your student ID number</div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="department" class="form-label">Department</label>
+                    <select class="form-select" id="department" name="department">
+                      <option value="">Select Department</option>
+                      <option value="DOAH">Department of Arts and Humanities (DOAH)</option>
+                      <option value="DOSS">Department of Social Sciences (DOSS)</option>
+                      <option value="DOELS">Department of Environment & Life Science (DOELS)</option>
+                      <option value="DOPS">Department of Physical Science (DOPS)</option>
+                      <option value="DOMS">Department of Mathematical Sciences (DOMS)</option>
+                      <option value="NEW">New programmes</option>
+                      <option value="FIRST">New programmes (first year only)</option>
+                    </select>
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label for="course" class="form-label">Course</label>
+                    <select class="form-select" id="course" name="course" disabled>
+                      <option value="">Select Course</option>
+                      <!-- Will be populated based on department selection -->
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="year" class="form-label">Year</label>
+                    <select class="form-select" id="year" name="year">
+                      <option value="">Select Year</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4" class="year-option-regular">4th Year</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Faculty/Admin-specific fields - initially hidden -->
+              <div id="facultyAdminFields" style="display: none;">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="profession" class="form-label">Profession/Designation</label>
+                    <select class="form-select" id="profession" name="profession">
+                      <option value="">Select Profession</option>
+                      <option value="Lecturer">Lecturer</option>
+                      <option value="DSA">Dean of Student Affairs (DSA)</option>
+                      <option value="DAA">Dean of Academic Affairs (DAA)</option>
+                      <option value="FENA">FENA</option>
+                      <option value="President">President</option>
+                      <option value="Coordinator">Coordinator</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="gender" class="form-label">Gender</label>
+                  <select class="form-select" id="gender" name="gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="male" <%= locals.gender === 'male' ? 'selected' : '' %>>Male</option>
+                    <option value="female" <%= locals.gender === 'female' ? 'selected' : '' %>>Female</option>
+                    <option value="other" <%= locals.gender === 'other' ? 'selected' : '' %>>Other</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-6 mb-3" id="hostelField" style="display: none;">
+                  <label for="hostel" class="form-label">Hostel</label>
+                  <select class="form-select" id="hostel" name="hostel" disabled>
+                    <option value="">Select Hostel</option>
+                    <!-- Will be populated based on gender selection -->
+                  </select>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="password" class="form-label">Password</label>
+                  <input type="password" class="form-control" id="password" name="password" required>
+                  <div class="form-text">Password must be at least 6 characters long</div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label for="confirmPassword" class="form-label">Confirm Password</label>
+                  <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                </div>
+              </div>
+              
+              <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">Register</button>
+              </div>
+            </form>
+            
+            <div class="text-center mt-4">
+              <p class="mb-0">Already have an account? <a href="/login" class="text-decoration-none">Login</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Email role detection
+      const emailInput = document.getElementById('email');
+      const roleDetection = document.getElementById('roleDetection');
+      const studentFields = document.getElementById('studentFields');
+      const facultyAdminFields = document.getElementById('facultyAdminFields');
+      const hostelField = document.getElementById('hostelField');
+      const studentIdField = document.getElementById('studentId');
+      const professionField = document.getElementById('profession');
+      const departmentField = document.getElementById('department');
+      const yearField = document.getElementById('year');
+      const yearOption4th = document.querySelector('.year-option-regular');
+      
+      // List of known admin email prefixes
+      const knownAdminPrefixes = ["admin", "admin123", "sysadmin", "techadmin", "sysadmin2023"];
+      
+      emailInput.addEventListener('input', function() {
+        const email = this.value.toLowerCase();
+        
+        // Check if it's a valid institutional email
+        if (!email.endsWith('.sherubtse@rub.edu.bt')) {
+          roleDetection.innerHTML = '';
+          studentFields.style.display = 'none';
+          facultyAdminFields.style.display = 'none';
+          hostelField.style.display = 'none';
+          return;
+        }
+        
+        // Extract the prefix (everything before .sherubtse@rub.edu.bt)
+        const prefix = email.split('.sherubtse@rub.edu.bt')[0];
+        console.log("Email prefix:", prefix);
+        
+        let role = null;
+        
+        // Check for admin emails first (known admin prefixes)
+        if (knownAdminPrefixes.includes(prefix)) {
+          role = 'admin';
+          roleDetection.innerHTML = 'Detected role: <span class="fw-bold text-success">Admin</span>';
+          studentFields.style.display = 'none';
+          facultyAdminFields.style.display = 'block';
+          hostelField.style.display = 'none';
+          
+          // Make faculty/admin fields required
+          professionField.setAttribute('required', 'required');
+          
+          // Make student fields not required
+          studentIdField.removeAttribute('required');
+          departmentField.removeAttribute('required');
+          yearField.removeAttribute('required');
+        }
+        // Check for student emails (numbers only)
+        else if (/^\d+$/.test(prefix)) {
+          role = 'student';
+          roleDetection.innerHTML = 'Detected role: <span class="fw-bold text-success">Student</span>';
+          studentFields.style.display = 'block';
+          facultyAdminFields.style.display = 'none';
+          hostelField.style.display = 'block';
+          
+          // Make student fields required
+          studentIdField.setAttribute('required', 'required');
+          departmentField.setAttribute('required', 'required');
+          yearField.setAttribute('required', 'required');
+          
+          // Make faculty/admin fields not required
+          professionField.removeAttribute('required');
+        }
+        // Check for faculty emails (letters only)
+        else if (/^[a-zA-Z]+$/.test(prefix)) {
+          role = 'faculty';
+          roleDetection.innerHTML = 'Detected role: <span class="fw-bold text-success">Faculty</span>';
+          studentFields.style.display = 'none';
+          facultyAdminFields.style.display = 'block';
+          hostelField.style.display = 'none';
+          
+          // Make faculty/admin fields required
+          professionField.setAttribute('required', 'required');
+          
+          // Make student fields not required
+          studentIdField.removeAttribute('required');
+          departmentField.removeAttribute('required');
+          yearField.removeAttribute('required');
+        }
+        // Check for mixed alphanumeric (could be admin)
+        else if (/^[a-zA-Z0-9]+$/.test(prefix)) {
+          // If it has both letters and numbers but isn't in known admin list,
+          // we'll treat it as faculty for now
+          role = 'faculty';
+          roleDetection.innerHTML = 'Detected role: <span class="fw-bold text-success">Faculty</span>';
+          studentFields.style.display = 'none';
+          facultyAdminFields.style.display = 'block';
+          hostelField.style.display = 'none';
+          
+          // Make faculty/admin fields required
+          professionField.setAttribute('required', 'required');
+          
+          // Make student fields not required
+          studentIdField.removeAttribute('required');
+          departmentField.removeAttribute('required');
+          yearField.removeAttribute('required');
+        }
+        else {
+          roleDetection.innerHTML = 'Invalid email format. Please use the correct institutional email format.';
+          studentFields.style.display = 'none';
+          facultyAdminFields.style.display = 'none';
+          hostelField.style.display = 'none';
+        }
+      });
+
+      // Department and Course relationship
+      const departmentSelect = document.getElementById('department');
+      const courseSelect = document.getElementById('course');
+      const yearSelect = document.getElementById('year');
+      
+      // Course data by department
+      const coursesByDepartment = {
+        'DOAH': [
+          'BA in Dzongkha & English',
+          'BA in English',
+          'BA in History',
+          'BA in Media Studies'
+        ],
+        'DOSS': [
+          'BA in Political Science & Sociology',
+          'BA in Population and Development Studies',
+          'BA in Economics'
+        ],
+        'DOELS': [
+          'BSc in Life Sciences',
+          'BSc in Environmental Science',
+          'BSc in Geography'
+        ],
+        'DOPS': [
+          'BSc in Physics',
+          'BSc in Chemistry'
+        ],
+        'DOMS': [
+          'BSc in Mathematics',
+          'BSc in Statistics',
+          'BSc in Data Sciences'
+        ],
+        'NEW': [
+          'Bachelor of Digital Communications and Project Management',
+          'Bachelor of Economics and Political Science',
+          'Bachelor of Data Science and Data Analytics'
+        ],
+        'FIRST': [
+          'Section A',
+          'Section B',
+          'Section C',
+          'Section D'
+        ]
+      };
+
+      // Handle department change
+      departmentSelect.addEventListener('change', function() {
+        const department = this.value;
+        
+        // Reset course dropdown
+        courseSelect.innerHTML = '<option value="">Select Course</option>';
+        courseSelect.disabled = !department;
+        
+        if (department) {
+          // Populate courses based on department
+          const courses = coursesByDepartment[department] || [];
+          courses.forEach(course => {
+            const option = document.createElement('option');
+            option.value = course;
+            option.textContent = course;
+            courseSelect.appendChild(option);
+          });
+        }
+        
+        // Handle special case for first year
+        if (department === 'FIRST') {
+          yearSelect.value = '1';
+          yearOption4th.style.display = 'none'; // Hide 4th year option
+          
+          // Change the course label to "Section" for FIRST department
+          document.querySelector('label[for="course"]').textContent = 'Section';
+        } else {
+          yearOption4th.style.display = 'block'; // Show 4th year option
+          
+          // Reset the course label for other departments
+          document.querySelector('label[for="course"]').textContent = 'Course';
+        }
+      });
+
+      // Handle year change for Data Science courses
+      yearSelect.addEventListener('change', function() {
+        const department = departmentSelect.value;
+        const year = this.value;
+        const course = courseSelect.value;
+        
+        // Special handling for Data Science courses which are only available in certain years
+        if (department === 'DOMS' && course === 'BSc in Data Sciences' && (year === '1' || year === '2')) {
+          alert('BSc in Data Sciences is only available for 3rd and 4th year students.');
+          this.value = '';
+        } else if (department === 'NEW' && course === 'Bachelor of Data Science and Data Analytics' && year === '1') {
+          alert('Bachelor of Data Science and Data Analytics is only available for 2nd, 3rd, and 4th year students.');
+          this.value = '';
+        }
+        
+        // For FIRST department, don't allow 4th year
+        if (department === 'FIRST' && year === '4') {
+          alert('New programmes (first year only) are limited to 1st, 2nd, and 3rd year.');
+          this.value = '';
+        }
+      });
+
+      // Gender and Hostel relationship
+      const genderSelect = document.getElementById('gender');
+      const hostelSelect = document.getElementById('hostel');
+      
+      // Hostel data by gender
+      const hostelsByGender = {
+        'male': [
+          'Thubtenling',
+          'Minjurling',
+          'Yentenling',
+          'Rabtaling',
+          'DH1',
+          'DH2',
+          'DH3',
+          'DH7',
+          'DH8'
+        ],
+        'female': [
+          'Pemaling',
+          'Gatsheling',
+          'Gakiling',
+          'Yetsholing',
+          'Norbuling',
+          'Tshokiling',
+          'Dekiling',
+          'MPH',
+          'DH4',
+          'DH5'
+        ]
+      };
+
+      // Handle gender change
+      genderSelect.addEventListener('change', function() {
+        const gender = this.value;
+        
+        // Reset hostel dropdown
+        hostelSelect.innerHTML = '<option value="">Select Hostel</option>';
+        
+        // Only enable hostel selection for students
+        if (studentFields.style.display === 'block') {
+          hostelSelect.disabled = !gender;
+          
+          if (gender) {
+            // Populate hostels based on gender
+            const hostels = hostelsByGender[gender] || [];
+            hostels.forEach(hostel => {
+              const option = document.createElement('option');
+              option.value = hostel;
+              option.textContent = hostel;
+              hostelSelect.appendChild(option);
+            });
+          }
+        }
+      });
+
+      // Check email on page load to set initial form state
+      if (emailInput.value) {
+        emailInput.dispatchEvent(new Event('input'));
+      }
+      
+      // Password confirmation validation
+      const passwordInput = document.getElementById('password');
+      const confirmPasswordInput = document.getElementById('confirmPassword');
+      const form = document.querySelector('form');
+      
+      form.addEventListener('submit', function(event) {
+        if (passwordInput.value !== confirmPasswordInput.value) {
+          event.preventDefault();
+          alert('Passwords do not match!');
+        }
+      });
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

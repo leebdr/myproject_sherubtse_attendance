@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - Sherubtse College</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <!-- QR Code Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+  <%- include('../partials/student-header') %>
+
+  <main class="container py-4">
+    <% if (locals.success_msg) { %>
+      <div class="alert alert-success" role="alert">
+        <%= success_msg %>
+      </div>
+    <% } %>
+    
+    <% if (locals.error_msg) { %>
+      <div class="alert alert-danger" role="alert">
+        <%= error_msg %>
+      </div>
+    <% } %>
+
+    <div class="row">
+      <div class="col-md-12 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Student Dashboard</h5>
+            <span class="badge bg-primary">Student</span>
+          </div>
+          <div class="card-body">
+            <p>Welcome, <%= user.name %>!</p>
+            <p>Use the tabs below to scan QR codes for attendance or view your attendance history.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="scan-tab" data-bs-toggle="tab" data-bs-target="#scan" type="button" role="tab" aria-controls="scan" aria-selected="true">Scan QR Code</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">Attendance History</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses" type="button" role="tab" aria-controls="courses" aria-selected="false">My Courses</button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+      <!-- Scan QR Tab -->
+      <div class="tab-pane fade show active" id="scan" role="tabpanel" aria-labelledby="scan-tab">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Scan Attendance QR Code</h5>
+              </div>
+              <div class="card-body">
+                <div id="camera-container" class="ratio ratio-16x9 bg-light rounded mb-3 d-flex align-items-center justify-content-center">
+                  <div id="qr-reader" class="d-none w-100 h-100"></div>
+                  <div id="camera-placeholder" class="text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-qr-code-scan text-secondary mb-3" viewBox="0 0 16 16">
+                      <path d="M0 .5A.5.5 0 0 1 .5 0h3a.5.5 0 0 1 0 1H1v2.5a.5.5 0 0 1-1 0v-3Zm12 0a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V1h-2.5a.5.5 0 0 1-.5-.5ZM.5 12a.5.5 0 0 1 .5.5V15h2.5a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 .5-.5Zm15 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H15v-2.5a.5.5 0 0 1 .5-.5ZM4 4h1v1H4V4Z"/>
+                      <path d="M7 2H2v5h5V2ZM3 3h3v3H3V3Zm2 8H4v1h1v-1Z"/>
+                      <path d="M7 9H2v5h5V9Zm-4 1h3v3H3v-3Zm8-6h1v1h-1V4Z"/>
+                      <path d="M9 2h5v5H9V2Zm1 1v3h3V3h-3ZM8 8v2h1v1H8v1h2v-2h1v2h1v-1h2v-1h-3V8H8Zm2 2H9V9h1v1Zm4 2h-1v1h-2v1h3v-2Zm-4 2v-1H8v1h2Z"/>
+                      <path d="M12 9h2V8h-2v1Z"/>
+                    </svg>
+                    <p class="text-muted">Camera preview will appear here</p>
+                  </div>
+                </div>
+                
+                <div id="qr-reader-results" class="mb-3"></div>
+                
+                <div id="verification-container" class="d-none">
+                  <div class="alert alert-info">
+                    <div class="d-flex align-items-center">
+                      <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                      <div>Verifying your attendance...</div>
+                    </div>
+                  </div>
+                  
+                  <div id="verification-camera" class="ratio ratio-4x3 bg-dark rounded mb-3">
+                    <video id="verification-video" autoplay playsinline class="rounded"></video>
+                  </div>
+                  
+                  <canvas id="verification-canvas" class="d-none"></canvas>
+                </div>
+                
+                <div class="d-grid gap-2 col-6 mx-auto">
+                  <button id="start-scan-btn" class="btn btn-primary">Start Scanning</button>
+                  <button id="cancel-scan-btn" class="btn btn-danger d-none">Cancel</button>
+                </div>
+                
+                <form id="attendance-form" action="/student/scan-qr" method="POST" class="d-none">
+                  <input type="hidden" id="qr-data" name="qrData">
+                  <input type="hidden" id="face-image" name="faceImage">
+                  <input type="hidden" id="latitude" name="latitude">
+                  <input type="hidden" id="longitude" name="longitude">
+                </form>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Instructions</h5>
+              </div>
+              <div class="card-body">
+                <ol>
+                  <li>Ask your instructor to generate a QR code for the class.</li>
+                  <li>Click the "Start Scanning" button below.</li>
+                  <li>Position the QR code within the scanner frame.</li>
+                  <li>The system will verify your identity using facial recognition.</li>
+                  <li>Your location will be verified to ensure you're in class.</li>
+                  <li>Attendance will be marked if all checks pass.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Attendance History Tab -->
+      <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Attendance History</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="course-filter" class="form-label">Filter by Course</label>
+                <select id="course-filter" class="form-select">
+                  <option value="all" selected>All Courses</option>
+                  <!-- Course options will be populated via JavaScript -->
+                </select>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Course</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="attendance-history">
+                  <!-- This will be populated via JavaScript -->
+                  <tr>
+                    <td colspan="4" class="text-center">Loading attendance history...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- My Courses Tab -->
+      <div class="tab-pane fade" id="courses" role="tabpanel" aria-labelledby="courses-tab">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">My Courses</h5>
+          </div>
+          <div class="card-body">
+            <div class="row" id="courses-container">
+              <!-- This will be populated via JavaScript -->
+              <div class="col-12 text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading your courses...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // QR Code Scanner
+      const html5QrCode = new Html5Qrcode("qr-reader");
+      const qrResultElement = document.getElementById('qr-reader-results');
+      const verificationContainer = document.getElementById('verification-container');
+      const cameraContainer = document.getElementById('camera-container');
+      const cameraPlaceholder = document.getElementById('camera-placeholder');
+      const qrReader = document.getElementById('qr-reader');
+      const video = document.getElementById('verification-video');
+      const canvas = document.getElementById('verification-canvas');
+      const attendanceForm = document.getElementById('attendance-form');
+      const qrDataInput = document.getElementById('qr-data');
+      const faceImageInput = document.getElementById('face-image');
+      const latitudeInput = document.getElementById('latitude');
+      const longitudeInput = document.getElementById('longitude');
+      const startScanBtn = document.getElementById('start-scan-btn');
+      const cancelScanBtn = document.getElementById('cancel-scan-btn');
+      
+      let stream;
+      
+      // Config for QR scanner
+      const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+      
+      // Start scanning button
+      startScanBtn.addEventListener('click', function() {
+        startScanBtn.classList.add('d-none');
+        cancelScanBtn.classList.remove('d-none');
+        cameraPlaceholder.classList.add('d-none');
+        qrReader.classList.remove('d-none');
+        
+        // Start QR scanner
+        html5QrCode.start(
+          { facingMode: "environment" },
+          qrConfig,
+          onScanSuccess,
+          onScanFailure
+        );
+      });
+      
+      // Cancel scanning button
+      cancelScanBtn.addEventListener('click', function() {
+        html5QrCode.stop();
+        startScanBtn.classList.remove('d-none');
+        cancelScanBtn.classList.add('d-none');
+        cameraPlaceholder.classList.remove('d-none');
+        qrReader.classList.add('d-none');
+      });
+      
+      // QR scan success handler
+      function onScanSuccess(decodedText, decodedResult) {
+        // Stop QR scanner
+        html5QrCode.stop();
+        
+        qrResultElement.innerHTML = `
+          <div class="alert alert-success">
+            <strong>QR Code detected!</strong> Starting verification process...
+          </div>
+        `;
+        
+        // Store QR data
+        qrDataInput.value = decodedText;
+        
+        // Start verification process
+        startVerification();
+      }
+      
+      // QR scan failure handler
+      function onScanFailure(error) {
+        // Handle scan failure silently
+        console.warn(`QR scan error: ${error}`);
+      }
+      
+      // Start verification process
+      async function startVerification() {
+        verificationContainer.classList.remove('d-none');
+        qrReader.classList.add('d-none');
+        cancelScanBtn.classList.add('d-none');
+        
+        // Get location
+        try {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              latitudeInput.value = position.coords.latitude;
+              longitudeInput.value = position.coords.longitude;
+              
+              // Start face verification
+              startFaceVerification();
+            },
+            error => {
+              console.error('Geolocation error:', error);
+              qrResultElement.innerHTML = `
+                <div class="alert alert-danger">
+                  <strong>Error:</strong> Could not access your location. Please enable location services.
+                </div>
+              `;
+              verificationContainer.classList.add('d-none');
+              startScanBtn.classList.remove('d-none');
+            }
+          );
+        } catch (err) {
+          console.error('Location error:', err);
+          qrResultElement.innerHTML = `
+            <div class="alert alert-danger">
+              <strong>Error:</strong> Could not access your location. Please enable location services.
+            </div>
+          `;
+          verificationContainer.classList.add('d-none');
+          startScanBtn.classList.remove('d-none');
+        }
+      }
+      
+      // Start face verification
+      async function startFaceVerification() {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: 'user',
+              width: { ideal: 640 },
+              height: { ideal: 480 }
+            }
+          });
+          
+          video.srcObject = stream;
+          
+          // Capture image after 3 seconds
+          setTimeout(() => {
+            captureFace();
+          }, 3000);
+        } catch (err) {
+          console.error('Error accessing camera:', err);
+          qrResultElement.innerHTML = `
+            <div class="alert alert-danger">
+              <strong>Error:</strong> Could not access camera. Please ensure camera permissions are granted.
+            </div>
+          `;
+          verificationContainer.classList.add('d-none');
+          startScanBtn.classList.remove('d-none');
+        }
+      }
+      
+      // Capture face image
+      function captureFace() {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageDataUrl = canvas.toDataURL('image/jpeg');
+        faceImageInput.value = imageDataUrl;
+        
+        // Stop camera
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          video.srcObject = null;
+        }
+        
+        // Submit form
+        attendanceForm.submit();
+      }
+      
+      // Load attendance history
+      function loadAttendanceHistory() {
+        const historyTab = document.getElementById('history-tab');
+        const historyTable = document.getElementById('attendance-history');
+        const courseFilter = document.getElementById('course-filter');
+        
+        // Mock data for attendance history
+        const mockHistory = [
+          { id: 1, course: 'CSC101', date: '2023-05-01', time: '09:15 AM', status: 'Present' },
+          { id: 2, course: 'MTH201', date: '2023-05-01', time: '11:30 AM', status: 'Present' },
+          { id: 3, course: 'PHY102', date: '2023-04-30', time: '02:45 PM', status: 'Absent' },
+          { id: 4, course: 'ENG103', date: '2023-04-29', time: '10:00 AM', status: 'Present' },
+          { id: 5, course: 'CSC202', date: '2023-04-28', time: '01:15 PM', status: 'Present' }
+        ];
+        
+        // Extract unique courses for filter
+        const courses = [...new Set(mockHistory.map(record => record.course))];
+        
+        // Populate course filter
+        courses.forEach(course => {
+          const option = document.createElement('option');
+          option.value = course;
+          option.textContent = course;
+          courseFilter.appendChild(option);
+        });
+        
+        // Filter function
+        function filterAndRenderHistory() {
+          const selectedCourse = courseFilter.value;
+          let filteredHistory = mockHistory;
+          
+          if (selectedCourse !== 'all') {
+            filteredHistory = mockHistory.filter(record => record.course === selectedCourse);
+          }
+          
+          let html = '';
+          
+          if (filteredHistory.length === 0) {
+            html = `
+              <tr>
+                <td colspan="4" class="text-center py-4 text-muted">No attendance records found</td>
+              </tr>
+            `;
+          } else {
+            filteredHistory.forEach(record => {
+              html += `
+                <tr>
+                  <td>${record.course}</td>
+                  <td>${record.date}</td>
+                  <td>${record.time}</td>
+                  <td>
+                    <span class="badge ${record.status === 'Present' ? 'bg-success' : 'bg-danger'}">
+                      ${record.status}
+                    </span>
+                  </td>
+                </tr>
+              `;
+            });
+          }
+          
+          historyTable.innerHTML = html;
+        }
+        
+        // Initial render
+        historyTab.addEventListener('shown.bs.tab', filterAndRenderHistory);
+        
+        // Filter change event
+        courseFilter.addEventListener('change', filterAndRenderHistory);
+      }
+      
+      // Load my courses
+      function loadMyCourses() {
+        const coursesTab = document.getElementById('courses-tab');
+        const coursesContainer = document.getElementById('courses-container');
+        
+        // Mock data for courses
+        const mockCourses = [
+          { 
+            id: 'CSC101', 
+            name: 'Introduction to Computer Science',
+            instructor: 'Dr. John Doe',
+            schedule: 'Mon, Wed 9:00-10:30',
+            attendance: '90%'
+          },
+          { 
+            id: 'MTH201', 
+            name: 'Advanced Mathematics',
+            instructor: 'Prof. Sarah Johnson',
+            schedule: 'Tue, Thu 11:00-12:30',
+            attendance: '85%'
+          },
+          { 
+            id: 'PHY102', 
+            name: 'Physics Fundamentals',
+            instructor: 'Dr. Michael Chen',
+            schedule: 'Mon, Fri 2:00-3:30',
+            attendance: '75%'
+          },
+          { 
+            id: 'ENG103', 
+            name: 'English Composition',
+            instructor: 'Prof. Emily Wilson',
+            schedule: 'Wed, Fri 10:00-11:30',
+            attendance: '95%'
+          },
+          { 
+            id: 'CSC202', 
+            name: 'Data Structures',
+            instructor: 'Dr. Robert Brown',
+            schedule: 'Tue, Thu 1:00-2:30',
+            attendance: '88%'
+          }
+        ];
+        
+        coursesTab.addEventListener('shown.bs.tab', function() {
+          let html = '';
+          
+          mockCourses.forEach(course => {
+            html += `
+              <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                  <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">${course.id}</h5>
+                  </div>
+                  <div class="card-body">
+                    <h6 class="card-subtitle mb-3 text-muted">${course.name}</h6>
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item d-flex justify-content-between">
+                        <span>Instructor:</span>
+                        <span class="text-end">${course.instructor}</span>
+                      </li>
+                      <li class="list-group-item d-flex justify-content-between">
+                        <span>Schedule:</span>
+                        <span class="text-end">${course.schedule}</span>
+                      </li>
+                      <li class="list-group-item d-flex justify-content-between">
+                        <span>Attendance:</span>
+                        <span class="text-end fw-bold">${course.attendance}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+          
+          coursesContainer.innerHTML = html;
+        });
+      }
+      
+      // Initialize attendance history and courses
+      loadAttendanceHistory();
+      loadMyCourses();
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
